@@ -15,4 +15,8 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+export const uploadFiles = upload.fields([
+  { name: "gallery", maxCount: 10 }, // You can change `maxCount` based on your needs
+  { name: "videos", maxCount: 5 },   // Similarly, change maxCount for videos
+]);
 export default upload;

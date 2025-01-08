@@ -101,8 +101,8 @@ export interface ProjectDocument extends Document {
   repository: string;
   deploymentPlatform: string;
   deploymentDetails: DeploymentDetails;
-  gallery: string[];
-  videos: string[];
+  gallery: { title: string; url: string }[];
+  videos: { title: string; url: string }[];
   documents: DocumentFile[];
   likes: Like[];
   comments: Comment[];
@@ -234,8 +234,30 @@ const ProjectSchema = new Schema<ProjectDocument>(
     repository: { type: String, required: true },
     deploymentPlatform: { type: String, required: true },
     deploymentDetails: { type: DeploymentDetailsSchema, required: true },
-    gallery: { type: [String], required: true },
-    videos: { type: [String], required: true },
+    gallery: [
+      {
+        title: {
+          type: String,
+          required: true,
+        },
+        url: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    videos: [
+      {
+        title: {
+          type: String,
+          required: true,
+        },
+        url: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     documents: { type: [DocumentFileSchema], required: true },
     likes: { type: [LikeSchema], required: true },
     comments: { type: [CommentSchema], required: true },
