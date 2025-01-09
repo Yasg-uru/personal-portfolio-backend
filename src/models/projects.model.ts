@@ -232,17 +232,17 @@ const ProjectSchema = new Schema<ProjectDocument>(
     milestones: { type: [MilestoneSchema], required: true },
     liveDemo: { type: String, required: true },
     repository: { type: String, required: true },
-    deploymentPlatform: { type: String, required: true },
+    deploymentPlatform: { type: String },
     deploymentDetails: { type: DeploymentDetailsSchema, required: true },
     gallery: [
       {
         title: {
           type: String,
-          required: true,
+          // required: true,
         },
         url: {
           type: String,
-          required: true,
+          // required: true,
         },
       },
     ],
@@ -250,21 +250,21 @@ const ProjectSchema = new Schema<ProjectDocument>(
       {
         title: {
           type: String,
-          required: true,
+          // required: true,
         },
         url: {
           type: String,
-          required: true,
+          // required: true,
         },
       },
     ],
     documents: { type: [DocumentFileSchema], required: true },
     likes: { type: [LikeSchema], required: true },
     comments: { type: [CommentSchema], required: true },
-    documentation: { type: String, required: true },
-    apiDocs: { type: String, required: true },
+    documentation: { type: String, },
+    apiDocs: { type: String,  },
     changelog: { type: [ChangelogSchema], required: true },
-    analytics: { type: AnalyticsSchema, required: true },
+    analytics: { type: AnalyticsSchema,  },
     challenges: { type: [String], required: true },
     learnings: { type: [String], required: true },
     accessibilityFeatures: { type: [String], required: true },

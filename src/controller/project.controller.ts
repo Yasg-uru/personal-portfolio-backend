@@ -29,8 +29,8 @@ class projectController {
         liveDemo,
         repository,
         deploymentDetails,
-        // gallery is comming from the cloudinary
-        //vedios is comming fromt he cloudinary form data ,
+        gallery ,//is comming from the cloudinary
+        vedios ,//is comming fromt he cloudinary form data ,
         documents,
         challenges,
         learnings,
@@ -44,42 +44,42 @@ class projectController {
         maintenanceMessage,
         seo,
       } = req.body;
-      console.log("this is a req.body:", req.body);
-      const galleryUrls: { title: string; url: string }[] = [];
-      const vedioUrls: { title: string; url: string }[] = [];
+      // console.log("this is a req.body:", req.body);
+      // const galleryUrls: { title: string; url: string }[] = [];
+      // const vedioUrls: { title: string; url: string }[] = [];
 
-      if (req.files && "gallery" in req.files) {
-        const galleryFiles: Express.Multer.File[] = Array.isArray(
-          req.files.gallery
-        )
-          ? req.files.gallery
-          : [req.files.gallery];
-        galleryFiles.forEach(async (file) => {
-          const cloudinary = await UploadOnCloudinary(file.path);
-          cloudinary &&
-            cloudinary.secure_url &&
-            galleryUrls.push({
-              title: file.originalname,
-              url: cloudinary.secure_url,
-            });
-        });
-      }
-      if (req.files && "vedios" in req.files) {
-        const vedioFiles: Express.Multer.File[] = Array.isArray(
-          req.files.vedios
-        )
-          ? req.files.vedios
-          : [req.files.vedios];
-        vedioFiles.forEach(async (file) => {
-          const cloudinary = await UploadOnCloudinary(file.path);
-          cloudinary &&
-            cloudinary.secure_url &&
-            vedioUrls.push({
-              title: file.originalname,
-              url: cloudinary.secure_url,
-            });
-        });
-      }
+      // if (req.files && "gallery" in req.files) {
+      //   const galleryFiles: Express.Multer.File[] = Array.isArray(
+      //     req.files.gallery
+      //   )
+      //     ? req.files.gallery
+      //     : [req.files.gallery];
+      //   galleryFiles.forEach(async (file) => {
+      //     const cloudinary = await UploadOnCloudinary(file.path);
+      //     cloudinary &&
+      //       cloudinary.secure_url &&
+      //       galleryUrls.push({
+      //         title: file.originalname,
+      //         url: cloudinary.secure_url,
+      //       });
+      //   });
+      // }
+      // if (req.files && "vedios" in req.files) {
+      //   const vedioFiles: Express.Multer.File[] = Array.isArray(
+      //     req.files.vedios
+      //   )
+      //     ? req.files.vedios
+      //     : [req.files.vedios];
+      //   vedioFiles.forEach(async (file) => {
+      //     const cloudinary = await UploadOnCloudinary(file.path);
+      //     cloudinary &&
+      //       cloudinary.secure_url &&
+      //       vedioUrls.push({
+      //         title: file.originalname,
+      //         url: cloudinary.secure_url,
+      //       });
+      //   });
+      // }
 
       const newProject = new ProjectModel({
         title,
@@ -100,8 +100,8 @@ class projectController {
         liveDemo,
         repository,
         deploymentDetails,
-        gallery: galleryUrls,
-        vedios: vedioUrls,
+        gallery,
+        vedios,
         documents,
         challenges,
         learnings,
