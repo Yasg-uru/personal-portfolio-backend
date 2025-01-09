@@ -50,12 +50,31 @@ interface Like {
   timestamp: Date;
 }
 
-interface Comment {
+interface Reply {
   userId: mongoose.Types.ObjectId;
   comment: string;
   timestamp: Date;
   likes: Like[];
-  replies: Comment[];
+}
+
+interface EditHistory {
+  comment: string;
+  editedAt: Date;
+}
+
+export interface Comment {
+  userId: mongoose.Types.ObjectId;
+  comment: string;
+  timestamp: Date;
+  likes: Like[];
+  dislikes: Like[];
+  replies: Reply[];
+  edited: {
+    isEdited: boolean;
+    editHistory: EditHistory[];
+  };
+  pinned: boolean;
+  mentions: mongoose.Types.ObjectId[];
 }
 
 interface Changelog {
@@ -174,18 +193,35 @@ const LikeSchema = new Schema<Like>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   timestamp: { type: Date, required: true },
 });
-const repliesSchema = new Schema<Comment>({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  comment: { type: String, required: true },
-  timestamp: { type: Date, required: true },
-  likes: { type: [LikeSchema], default: [] },
-});
+
 const CommentSchema = new Schema<Comment>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   comment: { type: String, required: true },
   timestamp: { type: Date, required: true },
   likes: { type: [LikeSchema], default: [] },
-  replies: { type: [repliesSchema], default: [] },
+  dislikes: { type: [LikeSchema], default: [] }, // Track dislikes
+  replies: {
+    type: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        comment: { type: String, required: true },
+        timestamp: { type: Date, required: true },
+        likes: { type: [LikeSchema], default: [] },
+      },
+    ],
+    default: [],
+  },
+  edited: {
+    isEdited: { type: Boolean, default: false },
+    editHistory: [
+      {
+        comment: { type: String },
+        editedAt: { type: Date },
+      },
+    ],
+  },
+  pinned: { type: Boolean, default: false }, // Highlight key comments
+  mentions: { type: [Schema.Types.ObjectId], ref: "User", default: [] }, // Mentioned users
 });
 
 const ChangelogSchema = new Schema<Changelog>({
@@ -261,10 +297,10 @@ const ProjectSchema = new Schema<ProjectDocument>(
     documents: { type: [DocumentFileSchema], required: true },
     likes: { type: [LikeSchema], required: true },
     comments: { type: [CommentSchema], required: true },
-    documentation: { type: String, },
-    apiDocs: { type: String,  },
+    documentation: { type: String },
+    apiDocs: { type: String },
     changelog: { type: [ChangelogSchema], required: true },
-    analytics: { type: AnalyticsSchema,  },
+    analytics: { type: AnalyticsSchema },
     challenges: { type: [String], required: true },
     learnings: { type: [String], required: true },
     accessibilityFeatures: { type: [String], required: true },

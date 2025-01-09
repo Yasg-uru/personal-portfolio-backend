@@ -2,6 +2,9 @@ import { NextFunction, Response } from "express";
 import { reqwithuser } from "../middleware/auth.middleware";
 import { ProjectModel } from "../models/projects.model";
 import UploadOnCloudinary from "../util/cloudinary.util";
+import Errorhandler from "../util/Errorhandler.util";
+import mongoose from "mongoose";
+import { io } from "..";
 
 class projectController {
   public async createProject(
@@ -29,8 +32,8 @@ class projectController {
         liveDemo,
         repository,
         deploymentDetails,
-        gallery ,//is comming from the cloudinary
-        vedios ,//is comming fromt he cloudinary form data ,
+        gallery, //is comming from the cloudinary
+        vedios, //is comming fromt he cloudinary form data ,
         documents,
         challenges,
         learnings,
@@ -266,6 +269,44 @@ class projectController {
       });
     } catch (error) {
       console.error(error);
+      next(error);
+    }
+  }
+  public async addLikeUnlikePost(
+    req: reqwithuser,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.user?._id;
+      if (!userId)
+        return next(new Errorhandler(400, "please login to continue"));
+      const { projectId } = req.params;
+      const project = await ProjectModel.findById(projectId);
+      if (!project) return next(new Errorhandler(404, "project not found"));
+      const existingLikedUser = project.likes.findIndex(
+        (likeUser) => likeUser.userId.toString() === userId
+      );
+      let action = "liked";
+
+      if (existingLikedUser !== -1) {
+        action = "unliked";
+        project.likes.splice(existingLikedUser, 1);
+      } else {
+        project.likes.push({
+          userId: userId as mongoose.Types.ObjectId,
+          timestamp: new Date(),
+        });
+      }
+      io.emit("project-like-update", {
+        projectId,
+        likes: project.likes.length,
+        action,
+      });
+      res.status(200).json({
+        message: `project ${action} successfully`,
+      });
+    } catch (error) {
       next(error);
     }
   }

@@ -4,35 +4,38 @@ import ConnectDatabase from "./lib/connectDb";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import userRouter from "./route/user.route";
-
+import { Server } from "socket.io";
+import http from "http";
 import { ErrorhandlerMiddleware } from "./util/Errorhandler.util";
 import projectRouter from "./route/project.route";
 const app = express();
+const httpServer = http.createServer(app);
 
+export const io = new Server(httpServer, {
+  cors: {
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  },
+});
 app.use(
   cors({
-    origin: [
-      "http://192.168.137.13:8081",
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://procoders-frontend.vercel.app",
-    ], // The IP address where your Expo app is running
+    origin: ["http://localhost:5173"], // The IP address where your Expo app is running
     credentials: true,
   })
 );
-
+app.set('io',io);
 app.use(cookieParser());
 app.use(express.json());
 
 app.use("/user", userRouter);
-app.use('/project',projectRouter);
+app.use("/project", projectRouter);
 
 app.use(ErrorhandlerMiddleware);
 
 dotenv.config();
 ConnectDatabase();
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log("server is running on port:", PORT);
 });
 app.use(ErrorhandlerMiddleware);
