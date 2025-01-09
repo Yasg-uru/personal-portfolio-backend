@@ -475,13 +475,103 @@ class projectController {
         },
       });
       res.status(200).json({
-        message :'reply added to the comment successfully',
-        new_reply
-
-      })
+        message: "reply added to the comment successfully",
+        new_reply,
+      });
     } catch (error) {
       next(error);
-      
+    }
+  }
+  public async addLikeAndUnlikeOnCommentReply(
+    req: reqwithuser,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.user?._id;
+      const user = await usermodel.findById(userId);
+      if (!user) {
+        return next(new Errorhandler(404, "user not found"));
+      }
+      const { projectId, commentId, replyId } = req.params;
+      const project = await ProjectModel.findById(projectId);
+      if (!project) {
+        return next(new Errorhandler(404, "project not found"));
+      }
+      const comment = project.comments.find(
+        (comment) => comment._id.toString() === commentId
+      );
+      if (!comment) {
+        return next(new Errorhandler(404, "comment not found"));
+      }
+      let action: string = "liked"; //assuming the user is likes first time
+      const existingLikeIndex = comment.replies.findIndex(
+        (reply) => reply._id.toString() === replyId
+      );
+      //the like of the user is already exists then we need to unlike it
+      if (existingLikeIndex !== -1) {
+        action = "unliked";
+        //removing the existing like from the replies
+        comment.replies.splice(existingLikeIndex, 1);
+      } else {
+        comment.replies[existingLikeIndex].likes.push({
+          timestamp: new Date(),
+          userId: userId as mongoose.Types.ObjectId,
+        });
+      }
+      await project.save();
+      //after saving triggering the event
+      io.emit("reply_like-update", {
+        projectId,
+        commentId,
+        replyId,
+        action,
+        likes: comment.replies[existingLikeIndex].likes.length,
+      });
+      res.status(200).json({
+        message: `reply ${action} successfully`,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  public async editComment(
+    req: reqwithuser,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.user?._id;
+      const { projectId, commentId } = req.params;
+      const { newComment } = req.body;
+
+      const user = await usermodel.findById(userId);
+      if (!user) {
+        return next(new Errorhandler(404, "user not found"));
+      }
+      const project = await ProjectModel.findById(projectId);
+      if (!project) {
+        return next(new Errorhandler(404, "projecct not found"));
+      }
+      const comment = project.comments.find(
+        (comment) => comment._id.toString() === commentId
+      );
+      if (!comment) {
+        return next(new Errorhandler(404, "comment not found"));
+      }
+      comment.edited.isEdited = true;
+      comment.edited.editHistory.push({
+        comment: comment.comment,
+        editedAt: new Date(),
+      });
+      comment.comment = newComment;
+      await project.save();
+      res.status(200).json({
+        message: "comment edited successfully",
+        project,
+      });
+    } catch (error) {
+      next(error);
     }
   }
 }
