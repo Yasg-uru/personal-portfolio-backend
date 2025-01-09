@@ -418,7 +418,8 @@ class projectController {
       io.emit("commentLike-update", {
         projectId,
         commentId,
-        updatedComment: comment,
+        // updatedComment: comment,
+        likes: comment.likes.length,
         action,
       });
 
@@ -431,6 +432,56 @@ class projectController {
     } catch (error) {
       console.error("Error in liking/unliking comment:", error);
       next(error);
+    }
+  }
+  public async replyComment(
+    req: reqwithuser,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { projectId, commentId } = req.params;
+      const { replyText } = req.body;
+      const userId = req.user?._id;
+      const user = await usermodel.findById(userId);
+      if (!user) {
+        return next(new Errorhandler(400, "please login to continue"));
+      }
+      const project = await ProjectModel.findById(projectId);
+      if (!project) return next(new Errorhandler(404, "project not found"));
+      const comment = project.comments.find(
+        (comment) => comment._id.toString() == commentId
+      );
+      if (!comment) return next(new Errorhandler(404, "comment not found "));
+      // if comment is exist then we need to push the reply in the comment
+      const new_reply = {
+        userId: userId as mongoose.Types.ObjectId,
+        comment: replyText,
+        timestamp: new Date(),
+        likes: [],
+      };
+      comment.replies.push();
+      await project.save();
+      io.emit("new_reply", {
+        commentId,
+        projectId,
+        reply: {
+          ...new_reply,
+          user: {
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profileUrl,
+          },
+        },
+      });
+      res.status(200).json({
+        message :'reply added to the comment successfully',
+        new_reply
+
+      })
+    } catch (error) {
+      next(error);
+      
     }
   }
 }
