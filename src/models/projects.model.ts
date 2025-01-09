@@ -63,6 +63,8 @@ interface EditHistory {
 }
 
 export interface Comment {
+  _id:string ;
+  
   userId: mongoose.Types.ObjectId;
   comment: string;
   timestamp: Date;

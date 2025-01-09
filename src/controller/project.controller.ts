@@ -5,6 +5,7 @@ import UploadOnCloudinary from "../util/cloudinary.util";
 import Errorhandler from "../util/Errorhandler.util";
 import mongoose from "mongoose";
 import { io } from "..";
+import usermodel from "../models/usermodel";
 
 class projectController {
   public async createProject(
@@ -307,6 +308,128 @@ class projectController {
         message: `project ${action} successfully`,
       });
     } catch (error) {
+      next(error);
+    }
+  }
+  public async addComment(req: reqwithuser, res: Response, next: NextFunction) {
+    try {
+      const { projectId, userId, comment, mentions } = req.body;
+
+      if (!comment || typeof comment !== "string") {
+        return res
+          .status(400)
+          .json({ error: "Comment is required and must be a string." });
+      }
+
+      const user = await usermodel.findById(
+        userId,
+        "username email profileUrl"
+      );
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+      const newComment = {
+        userId: new mongoose.Types.ObjectId(userId),
+        comment,
+        timestamp: new Date(),
+        likes: [],
+        dislikes: [],
+        replies: [],
+        edited: {
+          isEdited: false,
+          editHistory: [],
+        },
+        pinned: false,
+        mentions: mentions.map(
+          (mention: string) => new mongoose.Types.ObjectId(mention)
+        ),
+      };
+      const updatedProject = await ProjectModel.findByIdAndUpdate(
+        projectId,
+        { $push: { comments: newComment } },
+        { new: true }
+      );
+      if (!updatedProject) {
+        return next(new Errorhandler(404, "project not found"));
+      }
+      const commentWithUserDetails = {
+        ...newComment,
+        user: {
+          name: user.username,
+          email: user.email,
+          profilePicture: user.profileUrl, // Optional, if you store profile pictures
+        },
+      };
+      io.emit("newComment", {
+        projectId,
+        comment: commentWithUserDetails,
+      });
+      res.status(201).json({
+        message: "Comment added successfully.",
+        comment: commentWithUserDetails,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  public async likeCommentUnlikeComment(
+    req: reqwithuser,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.user?._id;
+      const { projectId, commentId } = req.params;
+      let action = "liked";
+
+      if (!userId) {
+        return next(new Errorhandler(400, "User not authenticated"));
+      }
+
+      const project = await ProjectModel.findById(projectId);
+      if (!project) {
+        return next(new Errorhandler(404, "Project not found"));
+      }
+
+      const comment = project.comments.find(
+        (comment) => comment._id.toString() === commentId
+      );
+
+      if (!comment) {
+        return next(new Errorhandler(404, "Comment not found"));
+      }
+
+      const existingLikeIndex = comment.likes.findIndex(
+        (like) => like.userId.toString() === userId.toString()
+      );
+
+      if (existingLikeIndex !== -1) {
+        comment.likes.splice(existingLikeIndex, 1);
+        action = "unliked";
+      } else {
+        comment.likes.push({
+          userId: new mongoose.Types.ObjectId(userId.toString()),
+          timestamp: new Date(),
+        });
+      }
+
+      await project.save();
+
+      io.emit("commentLike-update", {
+        projectId,
+        commentId,
+        updatedComment: comment,
+        action,
+      });
+
+      res.status(200).json({
+        message: `${
+          action.charAt(0).toUpperCase() + action.slice(1)
+        } successfully.`,
+        comment,
+      });
+    } catch (error) {
+      console.error("Error in liking/unliking comment:", error);
       next(error);
     }
   }
