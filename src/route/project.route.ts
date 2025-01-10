@@ -31,11 +31,21 @@ projectRouter.post(
   projectController.addLikeAndUnlikeOnCommentReply
 );
 
-projectRouter.post('/edit-comment/:projectId/:commentId/',isAuthenticated,projectController.editComment);
+projectRouter.post(
+  "/edit-comment/:projectId/:commentId/",
+  isAuthenticated,
+  projectController.editComment
+);
 
 projectRouter.post(
   "/addreply/:projectId/:commentId",
   isAuthenticated,
   projectController.replyComment
 );
+projectRouter.post(
+  "/handledislike/:projectId/:commentId",
+  isAuthenticated,
+  projectController.handleCommentDisLikes
+);
+
 export default projectRouter;

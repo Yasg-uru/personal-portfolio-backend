@@ -262,9 +262,9 @@ class projectController {
       io.emit("commentLike-update", {
         projectId,
         commentId,
-        userId,// to track the current user who did this 
-        
-        likes :comment.likes,
+        userId, // to track the current user who did this
+
+        likes: comment.likes,
         action,
       });
 
@@ -323,6 +323,51 @@ class projectController {
       res.status(200).json({
         message: "reply added to the comment successfully",
         new_reply,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  public async handleCommentDisLikes(
+    req: reqwithuser,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { projectId, commentId } = req.params;
+      const userId = req.user?._id;
+      const project = await ProjectModel.findById(projectId);
+      if (!project) {
+        return next(new Errorhandler(404, "project not found"));
+      }
+      const comment = project.comments.find(
+        (comment) => comment._id.toString() === commentId
+      );
+      if (!comment) {
+        return next(new Errorhandler(404, "comment not found"));
+      }
+      const exisitingDisLikeIndex = comment.dislikes.findIndex(
+        (dislike) => dislike.userId.toString() === (userId as string).toString()
+      );
+
+      if (exisitingDisLikeIndex == -1) {
+        comment.dislikes.push({
+          userId: new mongoose.Types.ObjectId(userId as string),
+          timestamp: new Date(),
+        });
+      } else {
+        comment.dislikes.splice(exisitingDisLikeIndex, 1);
+      }
+      await project.save();
+      io.emit("dislike-update", {
+        userId,
+        projectId,
+        commentId,
+        dislikes: comment.dislikes,
+      });
+      res.status(200).json({
+        message: "project disliked successfully ",
+        comment,
       });
     } catch (error) {
       next(error);
@@ -392,7 +437,7 @@ class projectController {
         replyId,
         action,
         userId,
-      likes:reply.likes
+        likes: reply.likes,
       });
 
       res.status(200).json({
