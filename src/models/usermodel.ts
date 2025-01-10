@@ -10,9 +10,7 @@ export interface User extends Document {
   email: string;
   password: string;
   profileUrl: string;
-  verifyCode: string;
-  isVerified: boolean;
-  verifyCodeExpiry: Date;
+ 
   Role: "user" | "admin";
   ResetPasswordToken: string | undefined;
   ResetPasswordTokenExpire: Date | undefined;
@@ -24,11 +22,6 @@ export interface User extends Document {
 }
 const userSchema = new Schema<User>(
   {
-    username: {
-      type: String,
-      trim: true,
-      required: [true, "Please Enter user name"],
-    },
     email: {
       type: String,
       trim: true,
@@ -50,18 +43,7 @@ const userSchema = new Schema<User>(
     profileUrl: {
       type: String,
     },
-    verifyCode: {
-      type: String,
-      required: [true, "Verify code is mendatory"],
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verifyCodeExpiry: {
-      type: Date,
-      required: [true, "verify code date is expiry"],
-    },
+
     Role: {
       type: String,
       enum: ["admin", "user"],
