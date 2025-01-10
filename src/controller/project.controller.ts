@@ -160,8 +160,8 @@ class projectController {
   }
   public async addComment(req: reqwithuser, res: Response, next: NextFunction) {
     try {
-      const { projectId,  comment } = req.body;
-const userId=req.user?._id;
+      const { projectId, comment } = req.body;
+      const userId = req.user?._id;
       if (!comment || typeof comment !== "string") {
         return res
           .status(400)
@@ -176,6 +176,7 @@ const userId=req.user?._id;
         return res.status(404).json({ error: "User not found." });
       }
       const newComment = {
+        _id: new mongoose.Types.ObjectId(),
         userId: new mongoose.Types.ObjectId(userId as string),
         comment,
         timestamp: new Date(),
@@ -197,7 +198,7 @@ const userId=req.user?._id;
       }
       const commentWithUserDetails = {
         ...newComment,
-        user: {
+        userId: {
           name: user.username,
           email: user.email,
           profilePicture: user.profileUrl, // Optional, if you store profile pictures
@@ -261,8 +262,9 @@ const userId=req.user?._id;
       io.emit("commentLike-update", {
         projectId,
         commentId,
-        // updatedComment: comment,
-        likes: comment.likes.length,
+        userId,// to track the current user who did this 
+        
+        likes :comment.likes,
         action,
       });
 
@@ -311,7 +313,7 @@ const userId=req.user?._id;
         projectId,
         reply: {
           ...new_reply,
-          user: {
+          userId: {
             username: user.username,
             email: user.email,
             profilePicture: user.profileUrl,
@@ -337,13 +339,13 @@ const userId=req.user?._id;
       if (!user) {
         return next(new Errorhandler(404, "user not found"));
       }
-  
+
       const { projectId, commentId, replyId } = req.params;
       const project = await ProjectModel.findById(projectId);
       if (!project) {
         return next(new Errorhandler(404, "project not found"));
       }
-  
+
       // Find the comment that contains the reply
       const comment = project.comments.find(
         (comment) => comment._id.toString() === commentId
@@ -351,23 +353,23 @@ const userId=req.user?._id;
       if (!comment) {
         return next(new Errorhandler(404, "comment not found"));
       }
-  
+
       // Find the specific reply
       const reply = comment.replies.find(
         (reply) => reply._id.toString() === replyId.toString()
       );
-  
+
       if (!reply) {
         return next(new Errorhandler(404, "reply not found"));
       }
-  
+
       let action: string = "liked"; // Assuming the user is liking for the first time
-  
+
       // Check if the user has already liked this reply
       const existingLikeIndex = reply.likes.findIndex(
         (like) => like.userId.toString() === (userId as string).toString()
       );
-  
+
       if (existingLikeIndex !== -1) {
         // If the user has already liked the reply, we "unlike" it
         action = "unliked";
@@ -379,28 +381,29 @@ const userId=req.user?._id;
           userId: userId as mongoose.Types.ObjectId,
         });
       }
-  
+
       // Save the project after modifying the reply's like status
       await project.save();
-  
+
       // Emit the like/unlike action event with updated like count
-      io.emit("reply_like-update", {
+      io.emit("reply-like-update", {
         projectId,
         commentId,
         replyId,
         action,
-        likes: reply.likes.length, // Count of likes for the reply
+        userId,
+      likes:reply.likes
       });
-  
+
       res.status(200).json({
         message: `Reply ${action} successfully`,
       });
     } catch (error) {
-      console.log('This is an error:', error);
+      console.log("This is an error:", error);
       next(error);
     }
   }
-  
+
   public async editComment(
     req: reqwithuser,
     res: Response,
@@ -425,7 +428,7 @@ const userId=req.user?._id;
       if (!comment) {
         return next(new Errorhandler(404, "comment not found"));
       }
-      const previousText=comment.comment;
+      const previousText = comment.comment;
       comment.comment = newComment;
       comment.edited.isEdited = true;
       comment.edited.editHistory.push({
