@@ -27,7 +27,7 @@ class projectController {
         targetAudience,
         estimatedCompletionTime,
         teamMembers,
-     
+
         liveDemo,
         repository,
         deploymentPlatform,
@@ -92,7 +92,7 @@ class projectController {
         targetAudience,
         estimatedCompletionTime,
         teamMembers,
-   
+
         liveDemo,
         repository,
         deploymentPlatform,
@@ -160,8 +160,8 @@ class projectController {
   }
   public async addComment(req: reqwithuser, res: Response, next: NextFunction) {
     try {
-      const { projectId, userId, comment, mentions } = req.body;
-
+      const { projectId,  comment } = req.body;
+const userId=req.user?._id;
       if (!comment || typeof comment !== "string") {
         return res
           .status(400)
@@ -176,7 +176,7 @@ class projectController {
         return res.status(404).json({ error: "User not found." });
       }
       const newComment = {
-        userId: new mongoose.Types.ObjectId(userId),
+        userId: new mongoose.Types.ObjectId(userId as string),
         comment,
         timestamp: new Date(),
         likes: [],
@@ -186,10 +186,6 @@ class projectController {
           isEdited: false,
           editHistory: [],
         },
-        pinned: false,
-        mentions: mentions.map(
-          (mention: string) => new mongoose.Types.ObjectId(mention)
-        ),
       };
       const updatedProject = await ProjectModel.findByIdAndUpdate(
         projectId,
@@ -445,11 +441,7 @@ class projectController {
       }
 
       const project = await ProjectModel.findById(projectId)
-        .populate({
-          path: "tasks.assignee",
-          model: "User",
-          select: "name email role", // Include specific fields to avoid over-fetching
-        })
+
         .populate({
           path: "likes.userId",
           model: "User",
@@ -462,16 +454,6 @@ class projectController {
         })
         .populate({
           path: "comments.replies.userId",
-          model: "User",
-          select: "name email avatar",
-        })
-        .populate({
-          path: "comments.mentions",
-          model: "User",
-          select: "name email avatar",
-        })
-        .populate({
-          path: "analytics.userInteractions.userId",
           model: "User",
           select: "name email avatar",
         });
