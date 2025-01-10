@@ -12,6 +12,6 @@ projectRouter.post(
   uploadFiles,
   projectController.createProject
 );
-projectRouter.put('/update/:projectId',isAuthenticated,authorization(['admin']),uploadFiles,projectController.updateProject)
-
+// projectRouter.put('/update/:projectId',isAuthenticated,authorization(['admin']),uploadFiles,projectController.updateProject)
+projectRouter.get('/projects',projectController.getProjects);
 export default projectRouter;

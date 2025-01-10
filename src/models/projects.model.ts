@@ -8,16 +8,6 @@ interface TeamMember {
   github: string;
 }
 
-interface Task {
-  title: string;
-  description: string;
-  assignee: mongoose.Types.ObjectId;
-  status: string;
-  priority: string;
-  dueDate: Date;
-  completedAt: Date | null;
-}
-
 interface Timeline {
   phase: string;
   startDate: Date;
@@ -31,12 +21,6 @@ interface Milestone {
   description: string;
   dueDate: Date;
   isAchieved: boolean;
-}
-
-interface DeploymentDetails {
-  lastDeployed: Date;
-  status: string;
-  logs: string[];
 }
 
 interface DocumentFile {
@@ -55,8 +39,7 @@ interface Reply {
   comment: string;
   timestamp: Date;
   likes: Like[];
-  _id:string ;
-  
+  _id: string;
 }
 
 interface EditHistory {
@@ -77,31 +60,6 @@ export interface Comment {
     isEdited: boolean;
     editHistory: EditHistory[];
   };
-  pinned: boolean;
-  mentions: mongoose.Types.ObjectId[];
-}
-
-interface Changelog {
-  version: string;
-  description: string;
-  releaseDate: Date;
-}
-
-interface Analytics {
-  views: number;
-  likes: number;
-  downloads: number;
-  userInteractions: {
-    userId: mongoose.Types.ObjectId;
-    action: string;
-    timestamp: Date;
-  }[];
-}
-
-interface SEO {
-  metaTitle: string;
-  metaDescription: string;
-  keywords: string[];
 }
 
 export interface ProjectDocument extends Document {
@@ -117,31 +75,21 @@ export interface ProjectDocument extends Document {
   targetAudience: string[];
   estimatedCompletionTime: string;
   teamMembers: TeamMember[];
-  tasks: Task[];
-  timeline: Timeline[];
-  milestones: Milestone[];
+
   liveDemo: string;
   repository: string;
   deploymentPlatform: string;
-  deploymentDetails: DeploymentDetails;
+
   gallery: { title: string; url: string }[];
   videos: { title: string; url: string }[];
   documents: DocumentFile[];
   likes: Like[];
   comments: Comment[];
-  documentation: string;
-  apiDocs: string;
-  changelog: Changelog[];
-  analytics: Analytics;
+
   challenges: string[];
   learnings: string[];
   accessibilityFeatures: string[];
-  pricingModel: string;
-  price: number;
-  currency: string;
-  status: string;
-  visibility: string;
-  seo: SEO;
+
   isUnderMaintenance: boolean;
   maintenanceMessage: string;
   createdAt: Date;
@@ -149,67 +97,36 @@ export interface ProjectDocument extends Document {
 }
 
 const TeamMemberSchema = new Schema<TeamMember>({
-  name: { type: String, required: true },
-  role: { type: String, required: true },
-  email: { type: String, required: true },
-  linkedIn: { type: String, required: true },
-  github: { type: String, required: true },
-});
-
-const TaskSchema = new Schema<Task>({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  assignee: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  status: { type: String, required: true },
-  priority: { type: String, required: true },
-  dueDate: { type: Date, required: true },
-  completedAt: { type: Date, default: null },
-});
-
-const TimelineSchema = new Schema<Timeline>({
-  phase: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
-  description: { type: String, required: true },
-  status: { type: String, required: true },
-});
-
-const MilestoneSchema = new Schema<Milestone>({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  dueDate: { type: Date, required: true },
-  isAchieved: { type: Boolean, required: true },
-});
-
-const DeploymentDetailsSchema = new Schema<DeploymentDetails>({
-  lastDeployed: { type: Date, required: true },
-  status: { type: String, required: true },
-  logs: { type: [String], required: true },
+  name: { type: String },
+  role: { type: String },
+  email: { type: String },
+  linkedIn: { type: String },
+  github: { type: String },
 });
 
 const DocumentFileSchema = new Schema<DocumentFile>({
-  name: { type: String, required: true },
-  url: { type: String, required: true },
-  uploadedAt: { type: Date, required: true },
+  name: { type: String },
+  url: { type: String },
+  uploadedAt: { type: Date },
 });
 
 const LikeSchema = new Schema<Like>({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  timestamp: { type: Date, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: "User" },
+  timestamp: { type: Date },
 });
 
 const CommentSchema = new Schema<Comment>({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  comment: { type: String, required: true },
-  timestamp: { type: Date, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: "User" },
+  comment: { type: String },
+  timestamp: { type: Date },
   likes: { type: [LikeSchema], default: [] },
   dislikes: { type: [LikeSchema], default: [] }, // Track dislikes
   replies: {
     type: [
       {
-        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        comment: { type: String, required: true },
-        timestamp: { type: Date, required: true },
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        comment: { type: String },
+        timestamp: { type: Date },
         likes: { type: [LikeSchema], default: [] },
       },
     ],
@@ -224,65 +141,36 @@ const CommentSchema = new Schema<Comment>({
       },
     ],
   },
-  pinned: { type: Boolean, default: false }, // Highlight key comments
-  mentions: { type: [Schema.Types.ObjectId], ref: "User", default: [] }, // Mentioned users
-});
-
-const ChangelogSchema = new Schema<Changelog>({
-  version: { type: String, required: true },
-  description: { type: String, required: true },
-  releaseDate: { type: Date, required: true },
-});
-
-const AnalyticsSchema = new Schema<Analytics>({
-  views: { type: Number, required: true },
-  likes: { type: Number, required: true },
-  downloads: { type: Number, required: true },
-  userInteractions: [
-    {
-      userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-      action: { type: String, required: true },
-      timestamp: { type: Date, required: true },
-    },
-  ],
-});
-
-const SEOSchema = new Schema<SEO>({
-  metaTitle: { type: String, required: true },
-  metaDescription: { type: String, required: true },
-  keywords: { type: [String], required: true },
 });
 
 const ProjectSchema = new Schema<ProjectDocument>(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    categories: { type: [String], required: true },
-    tags: { type: [String], required: true },
-    overview: { type: String, required: true },
-    objectives: { type: String, required: true },
-    features: { type: [String], required: true },
-    technologies: { type: [String], required: true },
-    difficultyLevel: { type: String, required: true },
-    targetAudience: { type: [String], required: true },
-    estimatedCompletionTime: { type: String, required: true },
-    teamMembers: { type: [TeamMemberSchema], required: true },
-    tasks: { type: [TaskSchema], required: true },
-    timeline: { type: [TimelineSchema], required: true },
-    milestones: { type: [MilestoneSchema], required: true },
-    liveDemo: { type: String, required: true },
-    repository: { type: String, required: true },
+    title: { type: String },
+    description: { type: String },
+    categories: { type: [String] },
+    tags: { type: [String] },
+    overview: { type: String },
+    objectives: { type: String },
+    features: { type: [String] },
+    technologies: { type: [String] },
+    difficultyLevel: { type: String },
+    targetAudience: { type: [String] },
+    estimatedCompletionTime: { type: String },
+    teamMembers: { type: [TeamMemberSchema] },
+
+    liveDemo: { type: String },
+    repository: { type: String },
     deploymentPlatform: { type: String },
-    deploymentDetails: { type: DeploymentDetailsSchema, required: true },
+
     gallery: [
       {
         title: {
           type: String,
-          // required: true,
+          // ,
         },
         url: {
           type: String,
-          // required: true,
+          // ,
         },
       },
     ],
@@ -290,31 +178,23 @@ const ProjectSchema = new Schema<ProjectDocument>(
       {
         title: {
           type: String,
-          // required: true,
+          // ,
         },
         url: {
           type: String,
-          // required: true,
+          // ,
         },
       },
     ],
-    documents: { type: [DocumentFileSchema], required: true },
-    likes: { type: [LikeSchema], required: true },
-    comments: { type: [CommentSchema], required: true },
-    documentation: { type: String },
-    apiDocs: { type: String },
-    changelog: { type: [ChangelogSchema], required: true },
-    analytics: { type: AnalyticsSchema },
-    challenges: { type: [String], required: true },
-    learnings: { type: [String], required: true },
-    accessibilityFeatures: { type: [String], required: true },
-    pricingModel: { type: String, required: true },
-    price: { type: Number, required: true },
-    currency: { type: String, required: true },
-    status: { type: String, required: true },
-    visibility: { type: String, required: true },
-    seo: { type: SEOSchema, required: true },
-    isUnderMaintenance: { type: Boolean, required: true },
+    documents: { type: [DocumentFileSchema],default :[] },
+    likes: { type: [LikeSchema] },
+    comments: { type: [CommentSchema] },
+
+    challenges: { type: [String] },
+    learnings: { type: [String] },
+    accessibilityFeatures: { type: [String] },
+
+    isUnderMaintenance: { type: Boolean },
     maintenanceMessage: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

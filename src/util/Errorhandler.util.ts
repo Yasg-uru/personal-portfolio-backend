@@ -19,9 +19,9 @@ export const ErrorhandlerMiddleware = (
   next: NextFunction
 ) => {
   if (err instanceof Errorhandler) {
-    return res.status(err.statuscode).json({ error: err.message });
+    return res.status(err.statuscode).json({ message: err.message });
   }
-  return res.status(500).json({ error: "Internal Server Error" });
+  return res.status(500).json({ message: "Internal Server Error" });
 };
 
 export default Errorhandler;
