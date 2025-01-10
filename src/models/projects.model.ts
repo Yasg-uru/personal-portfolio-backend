@@ -39,7 +39,7 @@ interface Reply {
   comment: string;
   timestamp: Date;
   likes: Like[];
-  _id: string;
+  _id: mongoose.Types.ObjectId;
 }
 
 interface EditHistory {

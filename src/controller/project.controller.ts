@@ -298,12 +298,13 @@ const userId=req.user?._id;
       if (!comment) return next(new Errorhandler(404, "comment not found "));
       // if comment is exist then we need to push the reply in the comment
       const new_reply = {
+        _id: new mongoose.Types.ObjectId(),
         userId: userId as mongoose.Types.ObjectId,
         comment: replyText,
         timestamp: new Date(),
         likes: [],
       };
-      comment.replies.push();
+      comment.replies.push(new_reply);
       await project.save();
       io.emit("new_reply", {
         commentId,
@@ -336,48 +337,70 @@ const userId=req.user?._id;
       if (!user) {
         return next(new Errorhandler(404, "user not found"));
       }
+  
       const { projectId, commentId, replyId } = req.params;
       const project = await ProjectModel.findById(projectId);
       if (!project) {
         return next(new Errorhandler(404, "project not found"));
       }
+  
+      // Find the comment that contains the reply
       const comment = project.comments.find(
         (comment) => comment._id.toString() === commentId
       );
       if (!comment) {
         return next(new Errorhandler(404, "comment not found"));
       }
-      let action: string = "liked"; //assuming the user is likes first time
-      const existingLikeIndex = comment.replies.findIndex(
-        (reply) => reply._id.toString() === replyId
+  
+      // Find the specific reply
+      const reply = comment.replies.find(
+        (reply) => reply._id.toString() === replyId.toString()
       );
-      //the like of the user is already exists then we need to unlike it
+  
+      if (!reply) {
+        return next(new Errorhandler(404, "reply not found"));
+      }
+  
+      let action: string = "liked"; // Assuming the user is liking for the first time
+  
+      // Check if the user has already liked this reply
+      const existingLikeIndex = reply.likes.findIndex(
+        (like) => like.userId.toString() === (userId as string).toString()
+      );
+  
       if (existingLikeIndex !== -1) {
+        // If the user has already liked the reply, we "unlike" it
         action = "unliked";
-        //removing the existing like from the replies
-        comment.replies.splice(existingLikeIndex, 1);
+        reply.likes.splice(existingLikeIndex, 1); // Remove the user's like from the reply
       } else {
-        comment.replies[existingLikeIndex].likes.push({
+        // If the user hasn't liked it, we add a new like
+        reply.likes.push({
           timestamp: new Date(),
           userId: userId as mongoose.Types.ObjectId,
         });
       }
+  
+      // Save the project after modifying the reply's like status
       await project.save();
-      //after saving triggering the event
+  
+      // Emit the like/unlike action event with updated like count
       io.emit("reply_like-update", {
         projectId,
         commentId,
         replyId,
         action,
-        likes: comment.replies[existingLikeIndex].likes.length,
+        likes: reply.likes.length, // Count of likes for the reply
       });
+  
       res.status(200).json({
-        message: `reply ${action} successfully`,
+        message: `Reply ${action} successfully`,
       });
     } catch (error) {
+      console.log('This is an error:', error);
       next(error);
     }
   }
+  
   public async editComment(
     req: reqwithuser,
     res: Response,
@@ -402,12 +425,13 @@ const userId=req.user?._id;
       if (!comment) {
         return next(new Errorhandler(404, "comment not found"));
       }
+      const previousText=comment.comment;
+      comment.comment = newComment;
       comment.edited.isEdited = true;
       comment.edited.editHistory.push({
-        comment: comment.comment,
+        comment: previousText,
         editedAt: new Date(),
       });
-      comment.comment = newComment;
       await project.save();
       res.status(200).json({
         message: "comment edited successfully",
@@ -443,19 +467,19 @@ const userId=req.user?._id;
       const project = await ProjectModel.findById(projectId)
 
         .populate({
-          path: "likes.userId",
+          path: "comments.likes.userId",
           model: "User",
-          select: "name email avatar", // Customize fields
+          select: "name email profileUrl", // Customize fields
         })
         .populate({
           path: "comments.userId",
           model: "User",
-          select: "name email avatar",
+          select: "name email profileUrl",
         })
         .populate({
           path: "comments.replies.userId",
           model: "User",
-          select: "name email avatar",
+          select: "name email profileUrl",
         });
 
       if (!project) {

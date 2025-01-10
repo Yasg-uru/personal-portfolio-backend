@@ -7,13 +7,35 @@ const projectRouter = Router();
 projectRouter.post(
   "/create",
   isAuthenticated,
-  authorization(['admin']),
+  authorization(["admin"]),
 
   uploadFiles,
   projectController.createProject
 );
 
-projectRouter.get('/projects',projectController.getProjects);
-projectRouter.post('/addcomment',isAuthenticated,projectController.addComment);
+projectRouter.get("/projects", projectController.getProjects);
+projectRouter.get("/:projectId", projectController.getProjectDetails);
+projectRouter.post(
+  "/like-unlike/:projectId/:commentId",
+  isAuthenticated,
+  projectController.likeCommentUnlikeComment
+);
+projectRouter.post(
+  "/addcomment",
+  isAuthenticated,
+  projectController.addComment
+);
+projectRouter.post(
+  "/like-unlike-reply/:projectId/:commentId/:replyId",
+  isAuthenticated,
+  projectController.addLikeAndUnlikeOnCommentReply
+);
 
+projectRouter.post('/edit-comment/:projectId/:commentId/',isAuthenticated,projectController.editComment);
+
+projectRouter.post(
+  "/addreply/:projectId/:commentId",
+  isAuthenticated,
+  projectController.replyComment
+);
 export default projectRouter;
