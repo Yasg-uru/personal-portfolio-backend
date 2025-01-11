@@ -65,6 +65,7 @@ export interface Comment {
 export interface ProjectDocument extends Document {
   title: string;
   description: string;
+  category:'featured' | 'practice' ;
   categories: string[];
   tags: string[];
   overview: string;
@@ -186,7 +187,7 @@ const ProjectSchema = new Schema<ProjectDocument>(
         },
       },
     ],
-    documents: { type: [DocumentFileSchema],default :[] },
+    documents: { type: [DocumentFileSchema], default: [] },
     likes: { type: [LikeSchema] },
     comments: { type: [CommentSchema] },
 

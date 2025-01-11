@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { ApiResponse } from "../types/Response/ApiResponse";
-const Transporter = nodemailer.createTransport({
+export const Transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
 
@@ -8,7 +8,7 @@ const Transporter = nodemailer.createTransport({
   auth: {
     user: "yashpawar12122004@gmail.com",
 
-    pass: "nwxb yuwl uioz dzkc",
+    pass: "arhj ynqn zxbk dncj",
   },
 });
 const sendVerificationMail = async (

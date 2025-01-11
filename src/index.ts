@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import http from "http";
 import { ErrorhandlerMiddleware } from "./util/Errorhandler.util";
 import projectRouter from "./route/project.route";
+import NotificationRouter from "./route/notification.route";
 const app = express();
 const httpServer = http.createServer(app);
 
@@ -29,6 +30,7 @@ app.use(express.json());
 
 app.use("/user", userRouter);
 app.use("/project", projectRouter);
+app.use('/notification',NotificationRouter)
 
 app.use(ErrorhandlerMiddleware);
 
