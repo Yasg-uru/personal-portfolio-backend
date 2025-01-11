@@ -132,3 +132,27 @@ export const Resetpassword = catchAsync(
     }
   }
 );
+export const verifyUser = async (
+  req: reqwithuser,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?._id;
+    const user = await usermodel.findById(userId);
+    if (!user) {
+      return next(
+        new Errorhandler(
+          404,
+          "your token has been expired so please login to continue"
+        )
+      );
+    }
+    res.status(200).json({
+      message: "user nverifies verified successfully",
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
