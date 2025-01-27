@@ -11,6 +11,7 @@ import projectRouter from "./route/project.route";
 import NotificationRouter from "./route/notification.route";
 const app = express();
 const httpServer = http.createServer(app);
+dotenv.config();
 
 export const io = new Server(httpServer, {
   cors: {
@@ -34,7 +35,6 @@ app.use('/notification',NotificationRouter)
 
 app.use(ErrorhandlerMiddleware);
 
-dotenv.config();
 ConnectDatabase();
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {

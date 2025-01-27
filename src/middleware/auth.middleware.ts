@@ -18,7 +18,7 @@ const isAuthenticated = async (
   }
   const decodedUser = jwt.verify(
     token,
-    process.env.JWT_SECRET as string
+    "procodersecret"
   ) as JwtDecodedUser;
   const user = await usermodel.findById(decodedUser.id);
   if (!user) {

@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const project_controller_1 = __importDefault(require("../controller/project.controller"));
+const multer_middleware_1 = require("../middleware/multer.middleware");
+const projectRouter = (0, express_1.Router)();
+projectRouter.post("/create", auth_middleware_1.isAuthenticated, (0, auth_middleware_1.authorization)(["admin"]), multer_middleware_1.uploadFiles, project_controller_1.default.createProject);
+projectRouter.get("/projects", project_controller_1.default.getProjects);
+projectRouter.get("/:projectId", project_controller_1.default.getProjectDetails);
+projectRouter.post("/like-unlike/:projectId/:commentId", auth_middleware_1.isAuthenticated, project_controller_1.default.likeCommentUnlikeComment);
+projectRouter.post("/addcomment", auth_middleware_1.isAuthenticated, project_controller_1.default.addComment);
+projectRouter.post("/like-unlike-reply/:projectId/:commentId/:replyId", auth_middleware_1.isAuthenticated, project_controller_1.default.addLikeAndUnlikeOnCommentReply);
+projectRouter.post("/edit-comment/:projectId/:commentId/", auth_middleware_1.isAuthenticated, project_controller_1.default.editComment);
+projectRouter.post("/addreply/:projectId/:commentId", auth_middleware_1.isAuthenticated, project_controller_1.default.replyComment);
+projectRouter.post("/handledislike/:projectId/:commentId", auth_middleware_1.isAuthenticated, project_controller_1.default.handleCommentDisLikes);
+exports.default = projectRouter;

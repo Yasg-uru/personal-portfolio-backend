@@ -74,7 +74,7 @@ userSchema.pre("save", async function (next): Promise<void> {
 userSchema.methods.generateToken = function (): string {
   return jwt.sign(
     { id: this._id, email: this.email, role: this.Role },
-    process.env.JWT_SECRET as string,
+    "procodersecret" as string,
     {
       expiresIn: process.env.JWT_EXPIRE,
     }
