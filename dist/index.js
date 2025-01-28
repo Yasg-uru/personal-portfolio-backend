@@ -20,12 +20,12 @@ const httpServer = http_1.default.createServer(app);
 dotenv_1.default.config();
 exports.io = new socket_io_1.Server(httpServer, {
     cors: {
-        origin: ["http://localhost:5173"],
+        origin: ["http://localhost:5173", 'https://personal-porfolio-jdx2ue9gj-yash-choudharys-projects-6acb3c69.vercel.app'],
         credentials: true,
     },
 });
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:5173"], // The IP address where your Expo app is running
+    origin: ["http://localhost:5173", 'https://personal-porfolio-jdx2ue9gj-yash-choudharys-projects-6acb3c69.vercel.app'], // The IP address where your Expo app is running
     credentials: true,
 }));
 app.set('io', exports.io);

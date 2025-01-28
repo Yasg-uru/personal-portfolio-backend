@@ -15,13 +15,13 @@ dotenv.config();
 
 export const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173",'https://personal-porfolio-jdx2ue9gj-yash-choudharys-projects-6acb3c69.vercel.app'],
     credentials: true,
   },
 });
 app.use(
   cors({
-    origin: ["http://localhost:5173"], // The IP address where your Expo app is running
+    origin: ["http://localhost:5173",'https://personal-porfolio-jdx2ue9gj-yash-choudharys-projects-6acb3c69.vercel.app'], // The IP address where your Expo app is running
     credentials: true,
   })
 );
