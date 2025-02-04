@@ -100,31 +100,38 @@ class projectController {
             var _a;
             try {
                 const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a._id;
-                if (!userId)
-                    return next(new Errorhandler_util_1.default(400, "please login to continue"));
+                if (!userId) {
+                    return next(new Errorhandler_util_1.default(400, "Please login to continue"));
+                }
                 const { projectId } = req.params;
                 const project = yield projects_model_1.ProjectModel.findById(projectId);
                 if (!project)
-                    return next(new Errorhandler_util_1.default(404, "project not found"));
-                const existingLikedUser = project.likes.findIndex((likeUser) => likeUser.userId.toString() === userId);
+                    return next(new Errorhandler_util_1.default(404, "Project not found"));
+                const existingLikedUser = project.likes.findIndex((likeUser) => likeUser.userId.toString() === userId.toString());
+                console.log('this is current user Id :', userId);
+                console.log('this is existing liked user ', existingLikedUser);
+                console.log('this is project likes :', project.likes);
                 let action = "liked";
                 if (existingLikedUser !== -1) {
                     action = "unliked";
-                    project.likes.splice(existingLikedUser, 1);
+                    project.likes.splice(existingLikedUser, 1); // Remove the user's like
                 }
                 else {
                     project.likes.push({
                         userId: userId,
                         timestamp: new Date(),
-                    });
+                    }); // Add the user's like
                 }
+                // Save the updated project document
+                yield project.save();
+                // Emit the updated like count and action to all connected clients
                 __1.io.emit("project-like-update", {
                     projectId,
-                    likes: project.likes.length,
+                    likes: project.likes,
                     action,
                 });
                 res.status(200).json({
-                    message: `project ${action} successfully`,
+                    message: `Project ${action} successfully`,
                 });
             }
             catch (error) {

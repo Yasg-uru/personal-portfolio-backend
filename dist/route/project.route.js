@@ -17,4 +17,5 @@ projectRouter.post("/like-unlike-reply/:projectId/:commentId/:replyId", auth_mid
 projectRouter.post("/edit-comment/:projectId/:commentId/", auth_middleware_1.isAuthenticated, project_controller_1.default.editComment);
 projectRouter.post("/addreply/:projectId/:commentId", auth_middleware_1.isAuthenticated, project_controller_1.default.replyComment);
 projectRouter.post("/handledislike/:projectId/:commentId", auth_middleware_1.isAuthenticated, project_controller_1.default.handleCommentDisLikes);
+projectRouter.post('/handleLikeUnlikeProject/:projectId', auth_middleware_1.isAuthenticated, project_controller_1.default.addLikeUnlikePost);
 exports.default = projectRouter;
