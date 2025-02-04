@@ -159,7 +159,7 @@ class projectController {
       // Emit the updated like count and action to all connected clients
       io.emit("project-like-update", {
         projectId,
-        likes: project.likes.length,
+        likes: project.likes,
         action,
       });
   
