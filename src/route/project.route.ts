@@ -47,5 +47,7 @@ projectRouter.post(
   isAuthenticated,
   projectController.handleCommentDisLikes
 );
+projectRouter.post('/handleLikeUnlikeProject/:projectId',isAuthenticated,projectController.addLikeUnlikePost);
+
 
 export default projectRouter;

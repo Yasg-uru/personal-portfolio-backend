@@ -127,32 +127,44 @@ class projectController {
   ) {
     try {
       const userId = req.user?._id;
-      if (!userId)
-        return next(new Errorhandler(400, "please login to continue"));
+      if (!userId) {
+        return next(new Errorhandler(400, "Please login to continue"));
+      }
+  
       const { projectId } = req.params;
       const project = await ProjectModel.findById(projectId);
-      if (!project) return next(new Errorhandler(404, "project not found"));
+      if (!project) return next(new Errorhandler(404, "Project not found"));
+  
       const existingLikedUser = project.likes.findIndex(
-        (likeUser) => likeUser.userId.toString() === userId
+        (likeUser) => likeUser.userId.toString() === userId.toString()
       );
+      console.log('this is current user Id :',userId)
+  console.log('this is existing liked user ',existingLikedUser);
+  console.log('this is project likes :',project.likes)
       let action = "liked";
-
+  
       if (existingLikedUser !== -1) {
         action = "unliked";
-        project.likes.splice(existingLikedUser, 1);
+        project.likes.splice(existingLikedUser, 1); // Remove the user's like
       } else {
         project.likes.push({
           userId: userId as mongoose.Types.ObjectId,
           timestamp: new Date(),
-        });
+        }); // Add the user's like
       }
+  
+      // Save the updated project document
+      await project.save();
+  
+      // Emit the updated like count and action to all connected clients
       io.emit("project-like-update", {
         projectId,
         likes: project.likes.length,
         action,
       });
+  
       res.status(200).json({
-        message: `project ${action} successfully`,
+        message: `Project ${action} successfully`,
       });
     } catch (error) {
       next(error);
