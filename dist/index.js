@@ -20,7 +20,7 @@ const httpServer = http_1.default.createServer(app);
 dotenv_1.default.config();
 exports.io = new socket_io_1.Server(httpServer, {
     cors: {
-        origin: ["http://localhost:5173", 'https://personal-porfolio-jdx2ue9gj-yash-choudharys-projects-6acb3c69.vercel.app'],
+        origin: ["http://localhost:5173", 'https://personal-porfolio-jdx2ue9gj-yash-choudharys-projects-6acb3c69.vercel.app', 'https://personal-porfolio-liart-psi.vercel.app'],
         credentials: true,
     },
 });
