@@ -9,6 +9,7 @@ import http from "http";
 import { ErrorhandlerMiddleware } from "./util/Errorhandler.util";
 import projectRouter from "./route/project.route";
 import NotificationRouter from "./route/notification.route";
+import "./jobs/load-data-in-cache"
 const app = express();
 const httpServer = http.createServer(app);
 dotenv.config();

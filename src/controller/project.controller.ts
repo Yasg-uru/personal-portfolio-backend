@@ -6,6 +6,7 @@ import Errorhandler from "../util/Errorhandler.util";
 import mongoose from "mongoose";
 import { io } from "..";
 import usermodel from "../models/usermodel";
+import redisCache from "../config/redis-config";
 
 class projectController {
   public async createProject(
@@ -507,7 +508,18 @@ class projectController {
     next: NextFunction
   ) {
     try {
+      const cacheKey = "all-projects";
+      const cachedData = await redisCache.get(cacheKey);
+      if(cachedData){
+        res.status(200).json({
+        message: "project fetched successfully",
+        projects:cachedData,
+      });
+      return ; 
+      }
       const projects = await ProjectModel.find({});
+      redisCache.set(cacheKey , projects, 86400) // 24 hrs 
+
       res.status(200).json({
         message: "project fetched successfully",
         projects,
@@ -516,43 +528,52 @@ class projectController {
       next(error);
     }
   }
-  public async getProjectDetails(req: Request, res: Response) {
-    try {
-      const { projectId } = req.params;
+ public async getProjectDetails(req: Request, res: Response) {
+  try {
+    const { projectId } = req.params;
 
-      if (!projectId) {
-        return res.status(400).json({ message: "Project ID is required" });
-      }
-
-      const project = await ProjectModel.findById(projectId)
-
-        .populate({
-          path: "comments.likes.userId",
-          model: "User",
-          select: "name email profileUrl", // Customize fields
-        })
-        .populate({
-          path: "comments.userId",
-          model: "User",
-          select: "name email profileUrl",
-        })
-        .populate({
-          path: "comments.replies.userId",
-          model: "User",
-          select: "name email profileUrl",
-        });
-
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
-      }
-
-      return res.status(200).json({ success: true, data: project });
-    } catch (error) {
-      console.error("Error fetching project details:", error);
-      return res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+    if (!projectId) {
+      return res.status(400).json({ message: "Project ID is required" });
     }
+
+    const cacheKey = `project:${projectId}`;
+    const cachedProject = await redisCache.get(cacheKey);
+
+    if (cachedProject) {
+      return res.status(200).json({ success: true, data: cachedProject });
+    }
+
+    const project = await ProjectModel.findById(projectId)
+      .populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    
+    await redisCache.set(cacheKey, project, 60 * 60 * 24); // 24 hours in seconds
+
+    return res.status(200).json({ success: true, data: project });
+
+  } catch (error) {
+    console.error("Error fetching project details:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
+}
+
 }
 export default new projectController();
