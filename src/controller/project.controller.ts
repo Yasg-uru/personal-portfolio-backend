@@ -109,7 +109,7 @@ class projectController {
 
       // Save the new project to the database
       await newProject.save();
-
+      await redisCache.set(`project:${newProject._id}`, newProject, 60 * 60 * 24);
       // Respond with the success message and the created project
       res.status(200).json({
         message: "Project created successfully",
@@ -133,7 +133,21 @@ class projectController {
       }
   
       const { projectId } = req.params;
-      const project = await ProjectModel.findById(projectId);
+      const project = await ProjectModel.findById(projectId).populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });
       if (!project) return next(new Errorhandler(404, "Project not found"));
   
       const existingLikedUser = project.likes.findIndex(
@@ -156,7 +170,7 @@ class projectController {
   
       // Save the updated project document
       await project.save();
-  
+      await redisCache.set(`project:${project._id}`, project, 60 * 60 * 24);
       // Emit the updated like count and action to all connected clients
       io.emit("project-like-update", {
         projectId,
@@ -205,7 +219,21 @@ class projectController {
         projectId,
         { $push: { comments: newComment } },
         { new: true }
-      );
+      ).populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });;;
       if (!updatedProject) {
         return next(new Errorhandler(404, "project not found"));
       }
@@ -221,6 +249,7 @@ class projectController {
         projectId,
         comment: commentWithUserDetails,
       });
+      await redisCache.set(`project:${updatedProject._id}`, updatedProject, 60 * 60 * 24);
       res.status(201).json({
         message: "Comment added successfully.",
         comment: commentWithUserDetails,
@@ -243,7 +272,21 @@ class projectController {
         return next(new Errorhandler(400, "User not authenticated"));
       }
 
-      const project = await ProjectModel.findById(projectId);
+      const project = await ProjectModel.findById(projectId).populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });;;
       if (!project) {
         return next(new Errorhandler(404, "Project not found"));
       }
@@ -271,7 +314,7 @@ class projectController {
       }
 
       await project.save();
-
+      await redisCache.set(`project:${project._id}`, project, 60 * 60 * 24);
       io.emit("commentLike-update", {
         projectId,
         commentId,
@@ -305,7 +348,21 @@ class projectController {
       if (!user) {
         return next(new Errorhandler(400, "please login to continue"));
       }
-      const project = await ProjectModel.findById(projectId);
+      const project = await ProjectModel.findById(projectId).populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });;;
       if (!project) return next(new Errorhandler(404, "project not found"));
       const comment = project.comments.find(
         (comment) => comment._id.toString() == commentId
@@ -333,6 +390,7 @@ class projectController {
           },
         },
       });
+      await redisCache.set(`project:${project._id}`, project, 60 * 60 * 24);
       res.status(200).json({
         message: "reply added to the comment successfully",
         new_reply,
@@ -349,7 +407,21 @@ class projectController {
     try {
       const { projectId, commentId } = req.params;
       const userId = req.user?._id;
-      const project = await ProjectModel.findById(projectId);
+      const project = await ProjectModel.findById(projectId).populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });;;
       if (!project) {
         return next(new Errorhandler(404, "project not found"));
       }
@@ -372,6 +444,7 @@ class projectController {
         comment.dislikes.splice(exisitingDisLikeIndex, 1);
       }
       await project.save();
+      await redisCache.set(`project:${project._id}`, project, 60 * 60 * 24);
       io.emit("dislike-update", {
         userId,
         projectId,
@@ -399,7 +472,21 @@ class projectController {
       }
 
       const { projectId, commentId, replyId } = req.params;
-      const project = await ProjectModel.findById(projectId);
+      const project = await ProjectModel.findById(projectId).populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });;;
       if (!project) {
         return next(new Errorhandler(404, "project not found"));
       }
@@ -442,7 +529,7 @@ class projectController {
 
       // Save the project after modifying the reply's like status
       await project.save();
-
+await redisCache.set(`project:${project._id}`, project, 60 * 60 * 24);
       // Emit the like/unlike action event with updated like count
       io.emit("reply-like-update", {
         projectId,
@@ -476,7 +563,21 @@ class projectController {
       if (!user) {
         return next(new Errorhandler(404, "user not found"));
       }
-      const project = await ProjectModel.findById(projectId);
+      const project = await ProjectModel.findById(projectId).populate({
+        path: "comments.likes.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+        select: "name email profileUrl",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+        select: "name email profileUrl",
+      });;
       if (!project) {
         return next(new Errorhandler(404, "projecct not found"));
       }
@@ -494,6 +595,7 @@ class projectController {
         editedAt: new Date(),
       });
       await project.save();
+      await redisCache.set(`project:${project._id}`, project, 60 * 60 * 24);
       res.status(200).json({
         message: "comment edited successfully",
         project,
@@ -511,6 +613,7 @@ class projectController {
       const cacheKey = "all-projects";
       const cachedData = await redisCache.get(cacheKey);
       if(cachedData){
+        console.log('this is cached projects ', cachedData)
         res.status(200).json({
         message: "project fetched successfully",
         projects:cachedData,
@@ -525,6 +628,7 @@ class projectController {
         projects,
       });
     } catch (error) {
+      console.log('this is error ', error )
       next(error);
     }
   }
@@ -540,6 +644,7 @@ class projectController {
     const cachedProject = await redisCache.get(cacheKey);
 
     if (cachedProject) {
+      console.log('cached details : ', cachedProject)
       return res.status(200).json({ success: true, data: cachedProject });
     }
 

@@ -10,6 +10,7 @@ import { ErrorhandlerMiddleware } from "./util/Errorhandler.util";
 import projectRouter from "./route/project.route";
 import NotificationRouter from "./route/notification.route";
 import "./jobs/load-data-in-cache"
+import redisCache from "./config/redis-config";
 const app = express();
 const httpServer = http.createServer(app);
 dotenv.config();
@@ -35,7 +36,7 @@ app.use("/project", projectRouter);
 app.use('/notification',NotificationRouter)
 
 app.use(ErrorhandlerMiddleware);
-
+redisCache.connect();
 ConnectDatabase();
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {

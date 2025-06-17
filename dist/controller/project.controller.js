@@ -18,6 +18,7 @@ const Errorhandler_util_1 = __importDefault(require("../util/Errorhandler.util")
 const mongoose_1 = __importDefault(require("mongoose"));
 const __1 = require("..");
 const usermodel_1 = __importDefault(require("../models/usermodel"));
+const redis_config_1 = __importDefault(require("../config/redis-config"));
 class projectController {
     createProject(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -83,6 +84,7 @@ class projectController {
                 });
                 // Save the new project to the database
                 yield newProject.save();
+                yield redis_config_1.default.set(`project:${newProject._id}`, newProject, 60 * 60 * 24);
                 // Respond with the success message and the created project
                 res.status(200).json({
                     message: "Project created successfully",
@@ -124,6 +126,7 @@ class projectController {
                 }
                 // Save the updated project document
                 yield project.save();
+                yield redis_config_1.default.set(`project:${project._id}`, project, 60 * 60 * 24);
                 // Emit the updated like count and action to all connected clients
                 __1.io.emit("project-like-update", {
                     projectId,
@@ -180,6 +183,7 @@ class projectController {
                     projectId,
                     comment: commentWithUserDetails,
                 });
+                yield redis_config_1.default.set(`project:${updatedProject._id}`, updatedProject, 60 * 60 * 24);
                 res.status(201).json({
                     message: "Comment added successfully.",
                     comment: commentWithUserDetails,
@@ -220,6 +224,7 @@ class projectController {
                     });
                 }
                 yield project.save();
+                yield redis_config_1.default.set(`project:${project._id}`, project, 60 * 60 * 24);
                 __1.io.emit("commentLike-update", {
                     projectId,
                     commentId,
@@ -274,6 +279,7 @@ class projectController {
                             profilePicture: user.profileUrl,
                         } }),
                 });
+                yield redis_config_1.default.set(`project:${project._id}`, project, 60 * 60 * 24);
                 res.status(200).json({
                     message: "reply added to the comment successfully",
                     new_reply,
@@ -309,6 +315,7 @@ class projectController {
                     comment.dislikes.splice(exisitingDisLikeIndex, 1);
                 }
                 yield project.save();
+                yield redis_config_1.default.set(`project:${project._id}`, project, 60 * 60 * 24);
                 __1.io.emit("dislike-update", {
                     userId,
                     projectId,
@@ -366,6 +373,7 @@ class projectController {
                 }
                 // Save the project after modifying the reply's like status
                 yield project.save();
+                yield redis_config_1.default.set(`project:${project._id}`, project, 60 * 60 * 24);
                 // Emit the like/unlike action event with updated like count
                 __1.io.emit("reply-like-update", {
                     projectId,
@@ -412,6 +420,7 @@ class projectController {
                     editedAt: new Date(),
                 });
                 yield project.save();
+                yield redis_config_1.default.set(`project:${project._id}`, project, 60 * 60 * 24);
                 res.status(200).json({
                     message: "comment edited successfully",
                     project,
@@ -425,13 +434,25 @@ class projectController {
     getProjects(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const cacheKey = "all-projects";
+                const cachedData = yield redis_config_1.default.get(cacheKey);
+                if (cachedData) {
+                    console.log('this is cached projects ', cachedData);
+                    res.status(200).json({
+                        message: "project fetched successfully",
+                        projects: cachedData,
+                    });
+                    return;
+                }
                 const projects = yield projects_model_1.ProjectModel.find({});
+                redis_config_1.default.set(cacheKey, projects, 86400); // 24 hrs 
                 res.status(200).json({
                     message: "project fetched successfully",
                     projects,
                 });
             }
             catch (error) {
+                console.log('this is error ', error);
                 next(error);
             }
         });
@@ -443,11 +464,17 @@ class projectController {
                 if (!projectId) {
                     return res.status(400).json({ message: "Project ID is required" });
                 }
+                const cacheKey = `project:${projectId}`;
+                const cachedProject = yield redis_config_1.default.get(cacheKey);
+                if (cachedProject) {
+                    console.log('cached details : ', cachedProject);
+                    return res.status(200).json({ success: true, data: cachedProject });
+                }
                 const project = yield projects_model_1.ProjectModel.findById(projectId)
                     .populate({
                     path: "comments.likes.userId",
                     model: "User",
-                    select: "name email profileUrl", // Customize fields
+                    select: "name email profileUrl",
                 })
                     .populate({
                     path: "comments.userId",
@@ -462,13 +489,12 @@ class projectController {
                 if (!project) {
                     return res.status(404).json({ message: "Project not found" });
                 }
+                yield redis_config_1.default.set(cacheKey, project, 60 * 60 * 24); // 24 hours in seconds
                 return res.status(200).json({ success: true, data: project });
             }
             catch (error) {
                 console.error("Error fetching project details:", error);
-                return res
-                    .status(500)
-                    .json({ success: false, message: "Internal server error" });
+                return res.status(500).json({ success: false, message: "Internal server error" });
             }
         });
     }

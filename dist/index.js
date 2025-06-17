@@ -15,6 +15,8 @@ const http_1 = __importDefault(require("http"));
 const Errorhandler_util_1 = require("./util/Errorhandler.util");
 const project_route_1 = __importDefault(require("./route/project.route"));
 const notification_route_1 = __importDefault(require("./route/notification.route"));
+require("./jobs/load-data-in-cache");
+const redis_config_1 = __importDefault(require("./config/redis-config"));
 const app = (0, express_1.default)();
 const httpServer = http_1.default.createServer(app);
 dotenv_1.default.config();
@@ -35,6 +37,7 @@ app.use("/user", user_route_1.default);
 app.use("/project", project_route_1.default);
 app.use('/notification', notification_route_1.default);
 app.use(Errorhandler_util_1.ErrorhandlerMiddleware);
+redis_config_1.default.connect();
 (0, connectDb_1.default)();
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
