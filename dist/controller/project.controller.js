@@ -106,7 +106,21 @@ class projectController {
                     return next(new Errorhandler_util_1.default(400, "Please login to continue"));
                 }
                 const { projectId } = req.params;
-                const project = yield projects_model_1.ProjectModel.findById(projectId);
+                const project = yield projects_model_1.ProjectModel.findById(projectId).populate({
+                    path: "comments.likes.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.replies.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                });
                 if (!project)
                     return next(new Errorhandler_util_1.default(404, "Project not found"));
                 const existingLikedUser = project.likes.findIndex((likeUser) => likeUser.userId.toString() === userId.toString());
@@ -170,7 +184,23 @@ class projectController {
                         editHistory: [],
                     },
                 };
-                const updatedProject = yield projects_model_1.ProjectModel.findByIdAndUpdate(projectId, { $push: { comments: newComment } }, { new: true });
+                const updatedProject = yield projects_model_1.ProjectModel.findByIdAndUpdate(projectId, { $push: { comments: newComment } }, { new: true }).populate({
+                    path: "comments.likes.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.replies.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                });
+                ;
+                ;
                 if (!updatedProject) {
                     return next(new Errorhandler_util_1.default(404, "project not found"));
                 }
@@ -204,7 +234,23 @@ class projectController {
                 if (!userId) {
                     return next(new Errorhandler_util_1.default(400, "User not authenticated"));
                 }
-                const project = yield projects_model_1.ProjectModel.findById(projectId);
+                const project = yield projects_model_1.ProjectModel.findById(projectId).populate({
+                    path: "comments.likes.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.replies.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                });
+                ;
+                ;
                 if (!project) {
                     return next(new Errorhandler_util_1.default(404, "Project not found"));
                 }
@@ -254,7 +300,23 @@ class projectController {
                 if (!user) {
                     return next(new Errorhandler_util_1.default(400, "please login to continue"));
                 }
-                const project = yield projects_model_1.ProjectModel.findById(projectId);
+                const project = yield projects_model_1.ProjectModel.findById(projectId).populate({
+                    path: "comments.likes.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.replies.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                });
+                ;
+                ;
                 if (!project)
                     return next(new Errorhandler_util_1.default(404, "project not found"));
                 const comment = project.comments.find((comment) => comment._id.toString() == commentId);
@@ -296,7 +358,23 @@ class projectController {
             try {
                 const { projectId, commentId } = req.params;
                 const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a._id;
-                const project = yield projects_model_1.ProjectModel.findById(projectId);
+                const project = yield projects_model_1.ProjectModel.findById(projectId).populate({
+                    path: "comments.likes.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.replies.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                });
+                ;
+                ;
                 if (!project) {
                     return next(new Errorhandler_util_1.default(404, "project not found"));
                 }
@@ -342,7 +420,23 @@ class projectController {
                     return next(new Errorhandler_util_1.default(404, "user not found"));
                 }
                 const { projectId, commentId, replyId } = req.params;
-                const project = yield projects_model_1.ProjectModel.findById(projectId);
+                const project = yield projects_model_1.ProjectModel.findById(projectId).populate({
+                    path: "comments.likes.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.replies.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                });
+                ;
+                ;
                 if (!project) {
                     return next(new Errorhandler_util_1.default(404, "project not found"));
                 }
@@ -404,7 +498,22 @@ class projectController {
                 if (!user) {
                     return next(new Errorhandler_util_1.default(404, "user not found"));
                 }
-                const project = yield projects_model_1.ProjectModel.findById(projectId);
+                const project = yield projects_model_1.ProjectModel.findById(projectId).populate({
+                    path: "comments.likes.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                })
+                    .populate({
+                    path: "comments.replies.userId",
+                    model: "User",
+                    select: "name email profileUrl",
+                });
+                ;
                 if (!project) {
                     return next(new Errorhandler_util_1.default(404, "projecct not found"));
                 }

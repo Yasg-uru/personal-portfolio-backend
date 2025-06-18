@@ -13,7 +13,7 @@ const redis_1 = require("redis");
 class RedisCache {
     constructor() {
         this.client = (0, redis_1.createClient)({
-            url: process.env.REDIS_CACHE_KEY
+            url: 'redis://default:qrwolXFcCbEriZeaIBGGxmWLkiWLhS7o@redis-18454.c240.us-east-1-3.ec2.redns.redis-cloud.com:18454',
             // url: "redis://127.0.0.1:6379",
         });
         this.client.on("connect", () => {
